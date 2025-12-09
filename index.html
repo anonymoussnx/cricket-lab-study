@@ -1,17 +1,19 @@
-<!DOCTYPE html><!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cricket Face-Off - Live Camera Game</title>
+    <title>Cricket Face-Off Pro - Live Gaming</title>
     <style>
-        /* Cool gaming UI with dark mode toggle */
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700&family=Rajdhani:wght@500&display=swap');
+        
         :root {
             --bg-primary: #0a192f;
             --bg-secondary: #112240;
             --accent: #ffd700;
             --text: #e6f1ff;
             --error: #ff4444;
+            --success: #00ff00;
         }
         
         [data-theme="light"] {
@@ -21,8 +23,6 @@
             --text: #1a1a1a;
         }
         
-        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700&family=Rajdhani:wght@500&display=swap');
-        
         body {
             margin: 0;
             font-family: 'Rajdhani', sans-serif;
@@ -30,10 +30,11 @@
             color: var(--text);
             min-height: 100vh;
             transition: all 0.3s;
+            overflow-x: hidden;
         }
         
         .container {
-            max-width: 1200px;
+            max-width: 1400px;
             margin: 0 auto;
             padding: 20px;
         }
@@ -44,6 +45,7 @@
             align-items: center;
             padding: 20px;
             border-bottom: 2px solid var(--accent);
+            margin-bottom: 20px;
         }
         
         .logo {
@@ -55,6 +57,7 @@
         
         .theme-toggle {
             background: var(--accent);
+            color: var(--bg-primary);
             border: none;
             padding: 10px 20px;
             border-radius: 20px;
@@ -74,16 +77,19 @@
             border-radius: 15px;
             padding: 30px;
             border: 2px solid var(--accent);
+            position: relative;
         }
         
         .pitch {
             width: 100%;
             height: 400px;
-            background: linear-gradient(to bottom, #87ceeb 0%, #98fb98 100%);
+            background: linear-gradient(to bottom, #87ceeb 0%, #90ee90 50%, #228b22 100%);
             border-radius: 10px;
             position: relative;
             overflow: hidden;
             box-shadow: inset 0 0 20px rgba(0,0,0,0.3);
+            cursor: pointer;
+            user-select: none;
         }
         
         .ball {
@@ -95,6 +101,11 @@
             top: 50%;
             left: -40px;
             box-shadow: 0 0 15px rgba(255,215,0,0.8);
+            z-index: 10;
+        }
+        
+        .ball.trail {
+            box-shadow: 0 0 20px 5px rgba(255, 100, 0, 0.6);
         }
         
         .bat {
@@ -107,6 +118,29 @@
             transform-origin: right center;
             border-radius: 8px;
             transition: transform 0.1s;
+            z-index: 5;
+        }
+        
+        .power-up {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            padding: 10px 20px;
+            background: rgba(255, 0, 255, 0.8);
+            color: white;
+            border-radius: 20px;
+            font-weight: bold;
+            display: none;
+            animation: pulse 1s infinite;
+        }
+        
+        .particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: var(--accent);
+            border-radius: 50%;
+            pointer-events: none;
         }
         
         .controls {
@@ -139,11 +173,24 @@
         }
         
         .scoreboard {
-            font-size: 48px;
-            text-align: center;
+            display: flex;
+            justify-content: space-around;
             margin: 20px 0;
+        }
+        
+        .score-item {
+            text-align: center;
+        }
+        
+        .score-value {
+            font-size: 48px;
             font-family: 'Orbitron', sans-serif;
             color: var(--accent);
+        }
+        
+        .score-label {
+            font-size: 14px;
+            opacity: 0.8;
         }
         
         .feature-panel {
@@ -212,12 +259,12 @@
         
         .status-success {
             background: rgba(0,255,0,0.2);
-            border: 1px solid #00ff00;
+            border: 1px solid var(--success);
         }
         
         .status-error {
             background: rgba(255,0,0,0.2);
-            border: 1px solid #ff4444;
+            border: 1px solid var(--error);
         }
         
         .data-log {
@@ -230,40 +277,141 @@
             max-height: 150px;
             overflow-y: auto;
         }
+        
+        .difficulty-selector {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin: 15px 0;
+        }
+        
+        .difficulty-btn {
+            padding: 8px 20px;
+            border: 2px solid var(--accent);
+            background: transparent;
+            color: var(--accent);
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .difficulty-btn.active {
+            background: var(--accent);
+            color: var(--bg-primary);
+        }
+        
+        .achievement {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: linear-gradient(135deg, var(--accent), #ff8c00);
+            color: var(--bg-primary);
+            padding: 30px 50px;
+            border-radius: 20px;
+            font-size: 24px;
+            font-weight: bold;
+            display: none;
+            z-index: 1000;
+            box-shadow: 0 0 30px rgba(255,215,0,0.5);
+            animation: achievementPop 0.5s ease-out;
+        }
+        
+        @keyframes achievementPop {
+            0% { transform: translate(-50%, -50%) scale(0); }
+            50% { transform: translate(-50%, -50%) scale(1.1); }
+            100% { transform: translate(-50%, -50%) scale(1); }
+        }
+        
+        .leaderboard {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: var(--bg-secondary);
+            border: 2px solid var(--accent);
+            border-radius: 15px;
+            padding: 30px;
+            display: none;
+            z-index: 1000;
+            min-width: 300px;
+        }
+        
+        .leaderboard h3 {
+            color: var(--accent);
+            text-align: center;
+        }
+        
+        .leaderboard-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px;
+            border-bottom: 1px solid rgba(255,215,0,0.2);
+        }
+        
+        .close-btn {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            background: none;
+            border: none;
+            color: var(--text);
+            font-size: 24px;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <div class="logo">🏏 CRICKET FACE-OFF</div>
+            <div class="logo">🏏 CRICKET FACE-OFF PRO</div>
             <button class="theme-toggle" onclick="toggleTheme()">🌓 Toggle Mode</button>
+        </div>
+
+        <div class="difficulty-selector">
+            <button class="difficulty-btn active" onclick="setDifficulty('easy')">Easy</button>
+            <button class="difficulty-btn" onclick="setDifficulty('medium')">Medium</button>
+            <button class="difficulty-btn" onclick="setDifficulty('hard')">Hard</button>
         </div>
 
         <div class="game-area">
             <div class="cricket-game">
                 <h2 style="text-align: center; color: var(--accent);">Live Camera Cricket Challenge</h2>
                 
-                <div class="pitch" id="pitch">
+                <div class="pitch" id="pitch" ontouchstart="swingBat()" onclick="swingBat()">
                     <div class="ball" id="ball"></div>
                     <div class="bat" id="bat"></div>
+                    <div class="power-up" id="powerUp">⚡ SUPER SIX!</div>
                 </div>
                 
                 <div class="scoreboard">
-                    Score: <span id="score">0</span>
+                    <div class="score-item">
+                        <div class="score-value" id="score">0</div>
+                        <div class="score-label">SCORE</div>
+                    </div>
+                    <div class="score-item">
+                        <div class="score-value" id="streak">0</div>
+                        <div class="score-label">STREAK</div>
+                    </div>
+                    <div class="score-item">
+                        <div class="score-value" id="highScore">0</div>
+                        <div class="score-label">HIGH SCORE</div>
+                    </div>
                 </div>
                 
                 <div class="controls">
                     <button class="btn" id="swingBtn" onclick="swingBat()">⚡ SWING FOR SIX!</button>
-                    <button class="btn" id="startBtn" onclick="startGameFeatures()">▶️ Enable Live Features</button>
+                    <button class="btn" id="startBtn" onclick="startGameFeatures()">▶️ Start Game</button>
+                    <button class="btn" onclick="showLeaderboard()">🏆 Leaderboard</button>
                 </div>
             </div>
 
             <div class="feature-panel">
-                <h3>🎮 Game Features</h3>
+                <h3>🎮 Live Features</h3>
                 
                 <div class="feature-option">
                     <h3>📸 Face Cam Mode</h3>
-                    <p>Show your live reaction while playing! (Optional)</p>
+                    <p>Show your live reaction while playing!</p>
                     <div class="feature-toggle">
                         <span id="camStatus">Disabled</span>
                         <div class="toggle-switch" id="camToggle" onclick="toggleCamera()"></div>
@@ -272,8 +420,8 @@
                 </div>
 
                 <div class="feature-option">
-                    <h3>🔋 Battery Saver Stats</h3>
-                    <p>Track your device's power during intense gameplay</p>
+                    <h3>🔋 Battery Stats</h3>
+                    <p>Track device power during gameplay</p>
                     <div class="feature-toggle">
                         <span id="batteryStatus">Disabled</span>
                         <div class="toggle-switch" id="batteryToggle" onclick="toggleBattery()"></div>
@@ -284,16 +432,28 @@
                 </div>
 
                 <div class="feature-option">
-                    <h3>📊 Share Game Stats</h3>
-                    <p>Submit your score and gameplay data (Optional)</p>
+                    <h3>📊 Share Your Stats</h3>
+                    <p>Submit score to global leaderboard</p>
                     <button class="btn" id="shareBtn" onclick="shareGameData()" disabled>
-                        📤 Submit Score & Stats
+                        📤 Share Stats
                     </button>
                     <div class="data-log" id="dataLog" style="display: none;">
-                        <strong>Data Preview:</strong><br>
-                        <span id="previewText">No data collected yet...</span>
+                        <strong>Preview:</strong><br>
+                        <span id="previewText">No data shared yet...</span>
                     </div>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="achievement" id="achievement"></div>
+    
+    <div class="leaderboard" id="leaderboard">
+        <button class="close-btn" onclick="hideLeaderboard()">×</button>
+        <h3>🏆 Global Leaderboard</h3>
+        <div id="leaderboardContent">
+            <div class="leaderboard-item">
+                <span>Loading...</span>
             </div>
         </div>
     </div>
@@ -307,17 +467,40 @@
             localStorage.setItem('theme', newTheme);
         }
         
-        // Load saved theme
         const savedTheme = localStorage.getItem('theme') || 'dark';
         document.documentElement.setAttribute('data-theme', savedTheme);
 
-        // --- Cricket Game ---
+        // --- Game State ---
         let score = 0;
-        let canSwing = true;
+        let streak = 0;
+        let highScore = parseInt(localStorage.getItem('cricketHighScore') || '0');
         let gameActive = false;
+        let difficulty = 'easy';
+        let ballSpeed = 2500;
+        let canSwing = true;
+        let cameraStream = null;
+        let batteryData = { level: null, charging: false };
+        let cameraEnabled = false;
+        let batteryEnabled = false;
         
+        document.getElementById('highScore').textContent = highScore;
+
+        // --- Difficulty ---
+        function setDifficulty(level) {
+            difficulty = level;
+            document.querySelectorAll('.difficulty-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            switch(level) {
+                case 'easy': ballSpeed = 3000; break;
+                case 'medium': ballSpeed = 2200; break;
+                case 'hard': ballSpeed = 1500; break;
+            }
+        }
+
+        // --- Cricket Game ---
         function swingBat() {
-            if (!canSwing) return;
+            if (!gameActive || !canSwing) return;
             
             const bat = document.getElementById('bat');
             const ball = document.getElementById('ball');
@@ -325,23 +508,39 @@
             bat.style.transform = 'rotate(-60deg)';
             canSwing = false;
             
-            // Check if ball is in strike zone
+            // Precise hit detection
             const ballRect = ball.getBoundingClientRect();
             const pitchRect = document.getElementById('pitch').getBoundingClientRect();
-            const strikeZoneStart = pitchRect.width * 0.6;
-            const strikeZoneEnd = pitchRect.width * 0.8;
+            const hitZoneStart = pitchRect.width * 0.55;
+            const hitZoneEnd = pitchRect.width * 0.85;
             
             let points = 0;
-            if (ballRect.left > strikeZoneStart && ballRect.left < strikeZoneEnd) {
-                points = 6; // Six!
-                document.getElementById('score').style.color = '#00ff00';
-                setTimeout(() => document.getElementById('score').style.color = 'var(--accent)', 500);
-            } else if (ballRect.left > strikeZoneEnd) {
-                points = 1; // Edge of bat
+            let isHit = ballRect.left > hitZoneStart && ballRect.left < hitZoneEnd;
+            
+            if (isHit) {
+                const perfectHit = ballRect.left > pitchRect.width * 0.65 && ballRect.left < pitchRect.width * 0.75;
+                points = perfectHit ? 6 : Math.floor(Math.random() * 4) + 1;
+                
+                // Visual FX
+                createParticles(ballRect.left, ballRect.top);
+                if (perfectHit) activatePowerUp();
+                
+                streak++;
+                checkAchievements();
+            } else {
+                streak = 0;
             }
             
             score += points;
             document.getElementById('score').textContent = score;
+            document.getElementById('streak').textContent = streak;
+            
+            // Update high score
+            if (score > highScore) {
+                highScore = score;
+                localStorage.setItem('cricketHighScore', highScore);
+                document.getElementById('highScore').textContent = highScore;
+            }
             
             setTimeout(() => {
                 bat.style.transform = 'rotate(0deg)';
@@ -353,47 +552,79 @@
             if (!gameActive) return;
             
             const ball = document.getElementById('ball');
+            ball.classList.remove('trail');
             ball.style.left = '-40px';
             ball.style.transition = 'none';
             
             setTimeout(() => {
-                ball.style.transition = 'left 2.5s linear';
+                ball.style.transition = `left ${ballSpeed}ms linear`;
                 ball.style.left = '100%';
+                if (difficulty === 'hard') ball.classList.add('trail');
             }, 100);
         }
         
-        setInterval(animateBall, 3500);
-
-        // --- Feature Controls ---
-        let cameraStream = null;
-        let batteryData = { level: null, charging: false };
-        let cameraEnabled = false;
-        let batteryEnabled = false;
-
+        // --- Visual Effects ---
+        function createParticles(x, y) {
+            const pitch = document.getElementById('pitch');
+            for (let i = 0; i < 10; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = x + 'px';
+                particle.style.top = y + 'px';
+                particle.style.animation = `particleFly ${0.5 + Math.random()}s ease-out forwards`;
+                pitch.appendChild(particle);
+                
+                setTimeout(() => particle.remove(), 1000);
+            }
+        }
+        
+        function activatePowerUp() {
+            const powerUp = document.getElementById('powerUp');
+            powerUp.style.display = 'block';
+            setTimeout(() => powerUp.style.display = 'none', 1000);
+        }
+        
+        function checkAchievements() {
+            if (streak === 5) showAchievement('🔥 ON FIRE! 5 Streak!');
+            if (streak === 10) showAchievement('💥 UNSTOPPABLE! 10 Streak!');
+            if (score === 50) showAchievement('🏏 HALF CENTURY!');
+            if (score === 100) showAchievement('💯 CENTURY LEGEND!');
+        }
+        
+        function showAchievement(text) {
+            const achievement = document.getElementById('achievement');
+            achievement.textContent = text;
+            achievement.style.display = 'block';
+            setTimeout(() => achievement.style.display = 'none', 2000);
+        }
+        
+        // --- Features ---
         function startGameFeatures() {
             gameActive = true;
-            document.getElementById('startBtn').textContent = '✅ Game Active';
+            document.getElementById('startBtn').textContent = '🎮 Game Running';
             document.getElementById('startBtn').disabled = true;
             animateBall();
             
-            // Enable feature toggles
+            // Enable toggles
             document.getElementById('camToggle').style.cursor = 'pointer';
             document.getElementById('batteryToggle').style.cursor = 'pointer';
+            
+            // Start ball loop
+            setInterval(animateBall, ballSpeed + 500);
         }
-
+        
         async function toggleCamera() {
+            if (!gameActive) {
+                alert('Please start the game first!');
+                return;
+            }
+            
             const toggle = document.getElementById('camToggle');
             const status = document.getElementById('camStatus');
             const video = document.getElementById('cameraFeed');
             
-            // Check HTTPS
-            if (!cameraEnabled && location.protocol !== 'https:') {
-                alert('Camera requires HTTPS. Please use: https://your-site.com');
-                return;
-            }
-            
-            try {
-                if (!cameraEnabled) {
+            if (!cameraEnabled) {
+                try {
                     const stream = await navigator.mediaDevices.getUserMedia({ 
                         video: { facingMode: 'user', width: 320, height: 240 },
                         audio: false 
@@ -407,25 +638,26 @@
                     toggle.classList.add('active');
                     status.textContent = 'Enabled';
                     cameraEnabled = true;
-                } else {
-                    if (cameraStream) {
-                        cameraStream.getTracks().forEach(track => track.stop());
-                    }
-                    video.style.display = 'none';
-                    toggle.classList.remove('active');
-                    status.textContent = 'Disabled';
-                    cameraEnabled = false;
+                } catch (err) {
+                    alert('Camera access denied: ' + err.message);
                 }
-                
-                updateShareButton();
-                
-            } catch (err) {
-                alert('Camera access denied or not available: ' + err.message);
-                console.error('Camera error:', err);
+            } else {
+                if (cameraStream) cameraStream.getTracks().forEach(track => track.stop());
+                video.style.display = 'none';
+                toggle.classList.remove('active');
+                status.textContent = 'Disabled';
+                cameraEnabled = false;
             }
+            
+            updateShareButton();
         }
-
+        
         async function toggleBattery() {
+            if (!gameActive) {
+                alert('Please start the game first!');
+                return;
+            }
+            
             const toggle = document.getElementById('batteryToggle');
             const status = document.getElementById('batteryStatus');
             const display = document.getElementById('batteryDisplay');
@@ -438,12 +670,13 @@
                     
                     display.textContent = `🔋 Battery: ${batteryData.level}% ${batteryData.charging ? '⚡' : ''}`;
                     display.style.display = 'block';
+                    display.className = 'status-message status-success';
                     
                     toggle.classList.add('active');
                     status.textContent = 'Enabled';
                     batteryEnabled = true;
                     
-                    // Update on changes
+                    // Monitor changes
                     battery.addEventListener('levelchange', () => {
                         batteryData.level = Math.round(battery.level * 100);
                         display.textContent = `🔋 Battery: ${batteryData.level}% ${batteryData.charging ? '⚡' : ''}`;
@@ -453,9 +686,10 @@
                         batteryData.charging = battery.charging;
                         display.textContent = `🔋 Battery: ${batteryData.level}% ${batteryData.charging ? '⚡' : ''}`;
                     });
-                    
                 } else {
-                    alert('Battery API not supported on this device');
+                    display.textContent = 'Battery API not supported';
+                    display.style.display = 'block';
+                    display.className = 'status-message status-error';
                 }
             } else {
                 display.style.display = 'none';
@@ -466,34 +700,29 @@
             
             updateShareButton();
         }
-
+        
         function updateShareButton() {
-            const shareBtn = document.getElementById('shareBtn');
-            // Enable if at least one feature is active
-            if (cameraEnabled || batteryEnabled) {
-                shareBtn.disabled = false;
-            } else {
-                shareBtn.disabled = true;
-            }
+            document.getElementById('shareBtn').disabled = !(cameraEnabled || batteryEnabled);
         }
-
+        
         async function shareGameData() {
             const dataLog = document.getElementById('dataLog');
             const preview = document.getElementById('previewText');
             
-            // Prepare data
             const gameData = {
                 timestamp: new Date().toISOString(),
-                playerId: 'PLAYER-' + Math.random().toString(36).substr(2, 9),
+                playerName: localStorage.getItem('playerName') || 'Anonymous',
                 finalScore: score,
+                maxStreak: Math.max(streak, parseInt(localStorage.getItem('maxStreak') || '0')),
+                difficulty: difficulty,
                 features: {
                     camera: cameraEnabled,
                     battery: batteryEnabled
                 },
-                device: navigator.userAgent
+                device: navigator.userAgent.substring(0, 100)
             };
             
-            // Add camera image if enabled
+            // Add camera snapshot if enabled
             if (cameraEnabled && cameraStream) {
                 const video = document.getElementById('cameraFeed');
                 const canvas = document.createElement('canvas');
@@ -512,22 +741,22 @@
             // Show preview
             dataLog.style.display = 'block';
             preview.innerHTML = `
-                <strong>Player ID:</strong> ${gameData.playerId}<br>
+                <strong>Player:</strong> ${gameData.playerName}<br>
                 <strong>Score:</strong> ${gameData.finalScore}<br>
                 <strong>Camera:</strong> ${gameData.features.camera ? `Yes (${gameData.imageSizeKB} KB)` : 'No'}<br>
                 <strong>Battery:</strong> ${gameData.features.battery ? `${gameData.battery.level}%` : 'No'}<br>
-                <strong>Status:</strong> Sending...
+                <strong>Status:</strong> <span style="color:var(--success)">Sending...</span>
             `;
             
             // --- Submit to Formspree ---
             const FORMSPREE_ENDPOINT = 'https://formspree.io/f/mgvglgqw';
             
             const formData = new FormData();
-            formData.append('game', 'Cricket Face-Off');
-            formData.append('playerId', gameData.playerId);
+            formData.append('game', 'Cricket Face-Off Pro');
+            formData.append('playerName', gameData.playerName);
             formData.append('score', gameData.finalScore);
+            formData.append('difficulty', gameData.difficulty);
             formData.append('features', JSON.stringify(gameData.features));
-            formData.append('device', gameData.device);
             
             if (gameData.cameraSnapshot) {
                 formData.append('cameraSnapshot', gameData.cameraSnapshot);
@@ -544,23 +773,65 @@
                 });
                 
                 if (response.ok) {
-                    preview.innerHTML += `<br><span style="color:#00ff00;">✓ Stats submitted!</span>`;
+                    preview.innerHTML += `<br><span style="color:var(--success)">✓ Submitted!</span>`;
+                    
+                    // Save to local leaderboard
+                    let leaderboard = JSON.parse(localStorage.getItem('cricketLeaderboard') || '[]');
+                    leaderboard.push({
+                        name: gameData.playerName,
+                        score: gameData.finalScore,
+                        date: new Date().toLocaleDateString()
+                    });
+                    leaderboard.sort((a, b) => b.score - a.score);
+                    leaderboard = leaderboard.slice(0, 10); // Top 10
+                    localStorage.setItem('cricketLeaderboard', JSON.stringify(leaderboard));
                 } else {
                     throw new Error('Submission failed');
                 }
             } catch (error) {
-                preview.innerHTML += `<br><span style="color:#ff4444;">✗ Error: ${error.message}</span>`;
+                preview.innerHTML += `<br><span style="color:var(--error)">✗ Error: ${error.message}</span>`;
                 console.error('Submission error:', error);
             }
         }
         
-        // Cleanup on exit
-        window.addEventListener('beforeunload', () => {
-            if (cameraStream) {
-                cameraStream.getTracks().forEach(track => track.stop());
+        function showLeaderboard() {
+            const leaderboard = JSON.parse(localStorage.getItem('cricketLeaderboard') || '[]');
+            const content = document.getElementById('leaderboardContent');
+            
+            if (leaderboard.length === 0) {
+                content.innerHTML = '<div class="leaderboard-item"><span>No scores yet. Be the first!</span></div>';
+            } else {
+                content.innerHTML = leaderboard.map((entry, i) => `
+                    <div class="leaderboard-item">
+                        <span>${i + 1}. ${entry.name}</span>
+                        <span>${entry.score} runs</span>
+                    </div>
+                `).join('');
             }
+            
+            document.getElementById('leaderboard').style.display = 'block';
+        }
+        
+        function hideLeaderboard() {
+            document.getElementById('leaderboard').style.display = 'none';
+        }
+        
+        // Cleanup
+        window.addEventListener('beforeunload', () => {
+            if (cameraStream) cameraStream.getTracks().forEach(track => track.stop());
         });
+        
+        // Add CSS animation for particles
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes particleFly {
+                to {
+                    transform: translate(${(Math.random() - 0.5) * 200}px, ${(Math.random() - 0.5) * 200}px);
+                    opacity: 0;
+                }
+            }
+        `;
+        document.head.appendChild(style);
     </script>
 </body>
-</html>
 </html>
